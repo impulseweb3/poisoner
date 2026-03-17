@@ -1,3 +1,4 @@
+use alloy::network::AnyNetwork;
 use alloy::providers::fillers::{
     BlobGasFiller, ChainIdFiller, FillProvider, GasFiller, JoinFill, NonceFiller,
 };
@@ -9,15 +10,20 @@ type Provider = FillProvider<
         Identity,
         JoinFill<GasFiller, JoinFill<BlobGasFiller, JoinFill<NonceFiller, ChainIdFiller>>>,
     >,
-    RootProvider,
+    RootProvider<AnyNetwork>,
+    AnyNetwork,
 >;
 
 pub(super) async fn get_ws_provider(url: &str) -> Provider {
-    let ws_connect = WsConnect::new(url);
-    ProviderBuilder::new().connect_ws(ws_connect).await.unwrap()
+    ProviderBuilder::new()
+        .network::<AnyNetwork>()
+        .connect_ws(WsConnect::new(url))
+        .await
+        .unwrap()
 }
 
 pub(super) fn get_http_provider(input: &str) -> Provider {
-    let url = Url::parse(input).unwrap();
-    ProviderBuilder::new().connect_http(url)
+    ProviderBuilder::new()
+        .network::<AnyNetwork>()
+        .connect_http(Url::parse(input).unwrap())
 }

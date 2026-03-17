@@ -15,11 +15,13 @@ async fn main() {
 
     let mut stream = ws_provider
         .subscribe_full_blocks()
+        .full()
         .into_stream()
         .await
         .unwrap();
 
     while let Some(block) = stream.next().await {
-        println!("{}", block.unwrap().header.number);
+        let block = block.unwrap();
+        println!("{:#?}", block);
     }
 }
