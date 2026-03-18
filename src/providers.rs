@@ -5,7 +5,7 @@ use alloy::providers::fillers::{
 use alloy::providers::{Identity, ProviderBuilder, RootProvider, WsConnect};
 use alloy::transports::http::reqwest::Url;
 
-type Provider = FillProvider<
+pub(super) type Provider = FillProvider<
     JoinFill<
         Identity,
         JoinFill<GasFiller, JoinFill<BlobGasFiller, JoinFill<NonceFiller, ChainIdFiller>>>,
