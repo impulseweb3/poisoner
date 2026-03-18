@@ -1,4 +1,6 @@
 use crate::config::get_config;
+use crate::handlers::handle_from::handle_from;
+use crate::handlers::handle_to::handle_to;
 use crate::providers::{get_http_provider, get_ws_provider};
 use alloy::consensus::Transaction;
 use alloy::primitives::U256;
@@ -7,6 +9,7 @@ use futures_util::StreamExt;
 use std::ops::Mul;
 
 mod config;
+mod handlers;
 mod providers;
 
 #[tokio::main]
@@ -31,7 +34,13 @@ async fn main() {
 
         for transaction in block.into_transactions_iter() {
             if transaction.value() > target_value {
-                println!("{:#?}", transaction);
+                if config.target.from {
+                    tokio::spawn(handle_from());
+                }
+
+                if config.target.to && transaction.to().is_some() {
+                    tokio::spawn(handle_to());
+                }
             }
         }
     }
