@@ -1,11 +1,11 @@
-use alloy::network::AnyNetwork;
+use alloy::network::{AnyNetwork, EthereumWallet};
 use alloy::providers::fillers::{
-    BlobGasFiller, ChainIdFiller, FillProvider, GasFiller, JoinFill, NonceFiller,
+    BlobGasFiller, ChainIdFiller, FillProvider, GasFiller, JoinFill, NonceFiller, WalletFiller,
 };
 use alloy::providers::{Identity, ProviderBuilder, RootProvider, WsConnect};
 use alloy::transports::http::reqwest::Url;
 
-pub(super) type Provider = FillProvider<
+pub(super) type WsProvider = FillProvider<
     JoinFill<
         Identity,
         JoinFill<GasFiller, JoinFill<BlobGasFiller, JoinFill<NonceFiller, ChainIdFiller>>>,
@@ -14,7 +14,19 @@ pub(super) type Provider = FillProvider<
     AnyNetwork,
 >;
 
-pub(super) async fn get_ws_provider(url: &str) -> Provider {
+pub type HttpProvider = FillProvider<
+    JoinFill<
+        JoinFill<
+            Identity,
+            JoinFill<GasFiller, JoinFill<BlobGasFiller, JoinFill<NonceFiller, ChainIdFiller>>>,
+        >,
+        WalletFiller<EthereumWallet>,
+    >,
+    RootProvider<AnyNetwork>,
+    AnyNetwork,
+>;
+
+pub(super) async fn get_ws_provider(url: &str) -> WsProvider {
     ProviderBuilder::new()
         .network::<AnyNetwork>()
         .connect_ws(WsConnect::new(url))
@@ -22,8 +34,9 @@ pub(super) async fn get_ws_provider(url: &str) -> Provider {
         .unwrap()
 }
 
-pub(super) fn get_http_provider(input: &str) -> Provider {
+pub(super) fn get_http_provider(ethereum_wallet: EthereumWallet, input: &str) -> HttpProvider {
     ProviderBuilder::new()
+        .wallet(ethereum_wallet)
         .network::<AnyNetwork>()
         .connect_http(Url::parse(input).unwrap())
 }
