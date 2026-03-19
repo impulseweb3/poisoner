@@ -1,14 +1,16 @@
 use crate::config::get_config;
 use crate::poison::poison;
-use crate::providers::get_ws_provider;
+use crate::providers::{get_http_provider, get_ws_provider};
 use alloy::consensus::Transaction;
-use alloy::network::TransactionResponse;
+use alloy::network::{EthereumWallet, TransactionResponse};
 use alloy::primitives::U256;
 use alloy::providers::Provider;
+use alloy::signers::local::PrivateKeySigner;
 use futures_util::StreamExt;
 use log::info;
 use rocksdb::DB;
 use std::ops::Mul;
+use std::str::FromStr;
 use std::sync::Arc;
 
 mod config;
@@ -26,6 +28,10 @@ async fn main() {
 
     let db = Arc::new(DB::open_default("db").unwrap());
     let ws_provider = get_ws_provider(&config.ws_url).await;
+
+    let private_key_signer = PrivateKeySigner::from_str(&config.private_key).unwrap();
+    let ethereum_wallet = EthereumWallet::from(private_key_signer);
+    let http_provider = Arc::new(get_http_provider(ethereum_wallet, &config.http_url));
 
     let mut stream = ws_provider
         .subscribe_full_blocks()
@@ -46,6 +52,7 @@ async fn main() {
                     tokio::spawn(poison(
                         Arc::clone(&config),
                         Arc::clone(&db),
+                        Arc::clone(&http_provider),
                         transaction.to().unwrap(),
                         transaction.from(),
                     ));
@@ -55,6 +62,7 @@ async fn main() {
                     tokio::spawn(poison(
                         Arc::clone(&config),
                         Arc::clone(&db),
+                        Arc::clone(&http_provider),
                         transaction.from(),
                         transaction.to().unwrap(),
                     ));
