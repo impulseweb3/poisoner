@@ -13,10 +13,11 @@ use std::sync::Arc;
 mod config;
 mod poison;
 mod providers;
+mod utils;
 
 #[tokio::main]
 async fn main() {
-    let config = get_config();
+    let config = Arc::new(get_config());
 
     let target_value = U256::from(config.target.value);
     let target_value = target_value.mul(U256::from(10).pow(U256::from(18)));
@@ -39,16 +40,20 @@ async fn main() {
             if transaction.value() > target_value {
                 if config.target.from {
                     tokio::spawn(poison(
+                        Arc::clone(&config),
                         Arc::clone(&db),
                         Arc::clone(&http_provider),
+                        transaction.to().unwrap(),
                         transaction.from(),
                     ));
                 }
 
                 if config.target.to && transaction.to().is_some() {
                     tokio::spawn(poison(
+                        Arc::clone(&config),
                         Arc::clone(&db),
                         Arc::clone(&http_provider),
+                        transaction.from(),
                         transaction.to().unwrap(),
                     ));
                 }
