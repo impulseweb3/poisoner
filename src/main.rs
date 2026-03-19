@@ -6,6 +6,7 @@ use alloy::network::TransactionResponse;
 use alloy::primitives::U256;
 use alloy::providers::Provider;
 use futures_util::StreamExt;
+use log::info;
 use rocksdb::DB;
 use std::ops::Mul;
 use std::sync::Arc;
@@ -17,8 +18,9 @@ mod utils;
 
 #[tokio::main]
 async fn main() {
-    let config = Arc::new(get_config());
+    env_logger::init();
 
+    let config = Arc::new(get_config());
     let target_value = U256::from(config.target.value);
     let target_value = target_value.mul(U256::from(10).pow(U256::from(18)));
 
@@ -35,9 +37,12 @@ async fn main() {
 
     while let Some(block) = stream.next().await {
         let block = block.unwrap();
+        info!("new block received | number {}", block.number());
 
         for transaction in block.into_transactions_iter() {
             if transaction.value() > target_value {
+                info!("new transaction received | hash {}", transaction.tx_hash());
+
                 if config.target.from {
                     tokio::spawn(poison(
                         Arc::clone(&config),
