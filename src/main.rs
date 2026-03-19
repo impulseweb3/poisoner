@@ -1,6 +1,6 @@
 use crate::config::get_config;
 use crate::poison::poison;
-use crate::providers::{get_http_provider, get_ws_provider};
+use crate::providers::get_ws_provider;
 use alloy::consensus::Transaction;
 use alloy::network::TransactionResponse;
 use alloy::primitives::U256;
@@ -26,7 +26,6 @@ async fn main() {
 
     let db = Arc::new(DB::open_default("db").unwrap());
     let ws_provider = get_ws_provider(&config.ws_url).await;
-    let http_provider = Arc::new(get_http_provider(&config.http_url));
 
     let mut stream = ws_provider
         .subscribe_full_blocks()
@@ -47,7 +46,6 @@ async fn main() {
                     tokio::spawn(poison(
                         Arc::clone(&config),
                         Arc::clone(&db),
-                        Arc::clone(&http_provider),
                         transaction.to().unwrap(),
                         transaction.from(),
                     ));
@@ -57,7 +55,6 @@ async fn main() {
                     tokio::spawn(poison(
                         Arc::clone(&config),
                         Arc::clone(&db),
-                        Arc::clone(&http_provider),
                         transaction.from(),
                         transaction.to().unwrap(),
                     ));
