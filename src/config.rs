@@ -5,7 +5,7 @@ use std::fs;
 pub(super) struct Target {
     pub(super) from: bool,
     pub(super) to: bool,
-    pub(super) value: u8,
+    pub(super) value: usize,
 }
 
 #[derive(Debug, Deserialize)]
@@ -15,6 +15,8 @@ pub(super) struct Config {
     #[serde(rename = "httpUrl")]
     pub(super) http_url: String,
     pub(super) target: Target,
+    pub(super) prefix: usize,
+    pub(super) suffix: usize,
     #[serde(rename = "privateKey")]
     pub(super) private_key: String,
 }
