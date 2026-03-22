@@ -34,9 +34,9 @@ pub(super) async fn get_ws_provider(url: &str) -> WsProvider {
         .unwrap()
 }
 
-pub(super) fn get_http_provider(wallet: EthereumWallet, input: &str) -> HttpProvider {
+pub(super) fn get_http_provider(wallet: EthereumWallet, url: &str) -> HttpProvider {
     ProviderBuilder::new()
         .wallet(wallet)
         .network::<AnyNetwork>()
-        .connect_http(Url::parse(input).unwrap())
+        .connect_http(Url::parse(url).unwrap())
 }

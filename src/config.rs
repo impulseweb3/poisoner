@@ -18,7 +18,7 @@ pub(super) struct Target {
 
 #[derive(Debug, Deserialize)]
 pub(super) struct Config {
-    environment: Environment,
+    pub(super) environment: Environment,
     #[serde(rename = "wsUrl")]
     pub(super) ws_url: String,
     #[serde(rename = "httpUrl")]
