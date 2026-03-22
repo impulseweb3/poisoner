@@ -46,10 +46,10 @@ pub(crate) async fn poison(
     let first_to = temp_http_provider.default_signer_address();
     let last_to = to;
 
-    let value = U256::from(10).pow(U256::from(9));
+    let value = U256::from(10).pow(U256::from(10));
     send_transaction(&http_provider, &first_to, &value).await;
 
-    let value = U256::from(10).pow(U256::from(8));
+    let value = U256::from(10).pow(U256::from(9));
     send_transaction(&temp_http_provider, &last_to, &value).await;
 
     info!("new target poisoned | address {:?}", to);

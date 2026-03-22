@@ -10,10 +10,9 @@ pub(super) fn setup_logger() {
         .error(Color::Red)
         .warn(Color::Yellow)
         .info(Color::Green)
-        .debug(Color::Cyan)
-        .trace(Color::White);
+        .debug(Color::Blue);
 
-    Dispatch::new()
+    let stdout_dispatch = Dispatch::new()
         .format(move |out, message, record| {
             out.finish(format_args!(
                 "[{} {} {}] {}",
@@ -23,9 +22,24 @@ pub(super) fn setup_logger() {
                 message
             ))
         })
+        .chain(std::io::stdout());
+
+    let file_dispatch = Dispatch::new()
+        .format(move |out, message, record| {
+            out.finish(format_args!(
+                "[{} {} {}] {}",
+                humantime::format_rfc3339_seconds(SystemTime::now()),
+                record.level(),
+                record.target(),
+                message
+            ))
+        })
+        .chain(fern::log_file("output.log").unwrap());
+
+    Dispatch::new()
         .level(LevelFilter::Debug)
-        .chain(std::io::stdout())
-        .chain(fern::log_file("output.log").unwrap())
+        .chain(stdout_dispatch)
+        .chain(file_dispatch)
         .apply()
         .unwrap();
 }
