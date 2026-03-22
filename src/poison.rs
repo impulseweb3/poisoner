@@ -7,24 +7,20 @@ use alloy::providers::{Provider, WalletProvider};
 use alloy::rpc::types::TransactionRequest;
 use alloy::serde::WithOtherFields;
 use alloy::signers::local::PrivateKeySigner;
-use log::{debug, info};
+use log::info;
 use rocksdb::{DBWithThreadMode, SingleThreaded};
 use std::str::FromStr;
 use std::sync::Arc;
 
 async fn send_transaction(http_provider: &HttpProvider, to: &Address, value: &U256) {
     let transaction = TransactionRequest::default().to(*to).value(*value);
-    debug!("transaction {:?}", transaction);
 
     let pending = http_provider
         .send_transaction(WithOtherFields::from(transaction))
         .await
         .unwrap();
 
-    debug!("pending {:?}", pending);
-
     let receipt = pending.get_receipt().await.unwrap();
-    debug!("receipt {:?}", receipt);
 }
 
 pub(crate) async fn poison(
@@ -46,10 +42,10 @@ pub(crate) async fn poison(
     let first_to = temp_http_provider.default_signer_address();
     let last_to = to;
 
-    let value = U256::from(10).pow(U256::from(10));
+    let value = U256::from(10).pow(U256::from(12));
     send_transaction(&http_provider, &first_to, &value).await;
 
-    let value = U256::from(10).pow(U256::from(9));
+    let value = U256::from(10).pow(U256::from(11));
     send_transaction(&temp_http_provider, &last_to, &value).await;
 
     info!("new target poisoned | address {:?}", to);

