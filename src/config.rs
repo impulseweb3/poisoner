@@ -2,6 +2,14 @@ use serde::Deserialize;
 use std::fs;
 
 #[derive(Debug, Deserialize)]
+pub(super) enum Environment {
+    #[serde(rename = "development")]
+    Development,
+    #[serde(rename = "production")]
+    Production,
+}
+
+#[derive(Debug, Deserialize)]
 pub(super) struct Target {
     pub(super) from: bool,
     pub(super) to: bool,
@@ -10,6 +18,7 @@ pub(super) struct Target {
 
 #[derive(Debug, Deserialize)]
 pub(super) struct Config {
+    environment: Environment,
     #[serde(rename = "wsUrl")]
     pub(super) ws_url: String,
     #[serde(rename = "httpUrl")]
@@ -17,6 +26,8 @@ pub(super) struct Config {
     pub(super) target: Target,
     pub(super) prefix: usize,
     pub(super) suffix: usize,
+    #[serde(rename = "publicKey")]
+    pub(super) public_key: String,
     #[serde(rename = "privateKey")]
     pub(super) private_key: String,
 }
