@@ -5,8 +5,9 @@ edition = "2024"
 
 [dependencies]
 alloy = { version = "1.7.3", features = ["full"] }
-env_logger = "0.11.9"
+fern = "0.7.1"
 futures-util = "0.3.32"
+humantime = "2.3.0"
 log = "0.4.29"
 rocksdb = "0.24.0"
 serde = { version = "1.0.228", features = ["derive"] }

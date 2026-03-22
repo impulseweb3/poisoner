@@ -1,6 +1,7 @@
 use crate::config::get_config;
 use crate::poison::poison;
 use crate::providers::{get_http_provider, get_ws_provider};
+use crate::utils::setup_logger;
 use alloy::consensus::Transaction;
 use alloy::network::{EthereumWallet, TransactionResponse};
 use alloy::primitives::U256;
@@ -20,7 +21,7 @@ mod utils;
 
 #[tokio::main]
 async fn main() {
-    env_logger::init();
+    setup_logger();
 
     let config = Arc::new(get_config());
     let target_value = U256::from(config.target.value);

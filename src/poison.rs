@@ -9,6 +9,7 @@ use alloy::serde::WithOtherFields;
 use alloy::signers::local::PrivateKeySigner;
 use log::{debug, info};
 use rocksdb::{DBWithThreadMode, SingleThreaded};
+use std::str::FromStr;
 use std::sync::Arc;
 
 async fn send_transaction(http_provider: &HttpProvider, to: &Address, value: &U256) {
@@ -34,9 +35,11 @@ pub(crate) async fn poison(
     to: Address,
 ) {
     let identifier = get_identifier(&config, &from);
-    let bytes = db.get(identifier).unwrap().unwrap();
 
-    let temp_private_key_signer = PrivateKeySigner::from_slice(&bytes).unwrap();
+    let bytes = db.get(identifier).unwrap().unwrap();
+    let string = String::from_utf8(bytes).unwrap();
+
+    let temp_private_key_signer = PrivateKeySigner::from_str(&string).unwrap();
     let temp_ethereum_wallet = EthereumWallet::from(temp_private_key_signer);
     let temp_http_provider = get_http_provider(temp_ethereum_wallet, &config.http_url);
 
