@@ -1,16 +1,24 @@
 use crate::config::Config;
 use alloy::primitives::Address;
+use fern::colors::{Color, ColoredLevelConfig};
 use fern::Dispatch;
 use log::LevelFilter;
 use std::time::SystemTime;
 
 pub(super) fn setup_logger() {
+    let colors = ColoredLevelConfig::new()
+        .error(Color::Red)
+        .warn(Color::Yellow)
+        .info(Color::Green)
+        .debug(Color::Cyan)
+        .trace(Color::White);
+
     Dispatch::new()
-        .format(|out, message, record| {
+        .format(move |out, message, record| {
             out.finish(format_args!(
                 "[{} {} {}] {}",
                 humantime::format_rfc3339_seconds(SystemTime::now()),
-                record.level(),
+                colors.color(record.level()),
                 record.target(),
                 message
             ))
