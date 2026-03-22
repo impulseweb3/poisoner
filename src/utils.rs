@@ -1,11 +1,16 @@
-use crate::config::Config;
+use crate::config::{Config, Environment};
 use alloy::primitives::Address;
 use fern::colors::{Color, ColoredLevelConfig};
 use fern::Dispatch;
 use log::LevelFilter;
 use std::time::SystemTime;
 
-pub(super) fn setup_logger() {
+pub(super) fn setup_logger(config: &Config) {
+    let level = match config.environment {
+        Environment::Development => LevelFilter::Debug,
+        Environment::Production => LevelFilter::Info,
+    };
+
     let colors = ColoredLevelConfig::new()
         .error(Color::Red)
         .warn(Color::Yellow)
@@ -38,7 +43,7 @@ pub(super) fn setup_logger() {
 
     Dispatch::new()
         .level(LevelFilter::Warn)
-        .level_for("poisoner", LevelFilter::Debug)
+        .level_for("poisoner", level)
         .chain(stdout_dispatch)
         .chain(file_dispatch)
         .apply()

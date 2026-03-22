@@ -23,10 +23,10 @@ mod utils;
 
 #[tokio::main]
 async fn main() {
-    setup_logger();
-
     let config = Arc::new(get_config());
     let db = Arc::new(DB::open_default("db").unwrap());
+
+    setup_logger(&config);
 
     let target_value = U256::from(config.target.value);
     let target_value = target_value.mul(U256::from(10).pow(U256::from(18)));
