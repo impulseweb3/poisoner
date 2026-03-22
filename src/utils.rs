@@ -37,6 +37,7 @@ pub(super) fn setup_logger() {
         .chain(fern::log_file("output.log").unwrap());
 
     Dispatch::new()
+        .level(LevelFilter::Warn)
         .level_for("poisoner", LevelFilter::Debug)
         .chain(stdout_dispatch)
         .chain(file_dispatch)

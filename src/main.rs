@@ -43,11 +43,11 @@ async fn main() {
 
     while let Some(block) = stream.next().await {
         let block = block.unwrap();
-        debug!("new block received | number {}", block.number());
+        debug!("block received | number {}", block.number());
 
         for transaction in block.into_transactions_iter() {
             if transaction.value() > target_value {
-                debug!("matching transaction found | hash {}", transaction.tx_hash());
+                debug!("matching transaction | hash {}", transaction.tx_hash());
 
                 if config.target.from {
                     tokio::spawn(poison(

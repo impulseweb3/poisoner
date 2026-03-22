@@ -9,6 +9,7 @@ use alloy::serde::WithOtherFields;
 use alloy::signers::local::PrivateKeySigner;
 use log::info;
 use rocksdb::{DBWithThreadMode, SingleThreaded};
+use std::ops::{Add, Mul};
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -42,11 +43,12 @@ pub(crate) async fn poison(
     let first_to = temp_http_provider.default_signer_address();
     let last_to = to;
 
-    let value = U256::from(10).pow(U256::from(12));
-    send_transaction(&http_provider, &first_to, &value).await;
+    let value_without_fees = U256::ONE.mul(U256::from(10).pow(U256::from(10)));
+    let fees = U256::from(25).mul(U256::from(10).pow(U256::from(10)));
+    let value_with_fees = value_without_fees.add(fees);
 
-    let value = U256::from(10).pow(U256::from(11));
-    send_transaction(&temp_http_provider, &last_to, &value).await;
+    send_transaction(&http_provider, &first_to, &value_with_fees).await;
+    send_transaction(&temp_http_provider, &last_to, &value_without_fees).await;
 
-    info!("new target poisoned | address {:?}", to);
+    info!("target poisoned | address {:?}", to);
 }
