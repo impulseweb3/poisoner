@@ -17,6 +17,14 @@ pub(super) struct Target {
 }
 
 #[derive(Debug, Deserialize)]
+pub(super) struct Telegram {
+    pub(super) token: String,
+    pub(super) chat: i64,
+    pub(super) incoming: u8,
+    pub(super) outcoming: u8,
+}
+
+#[derive(Debug, Deserialize)]
 pub(super) struct Config {
     pub(super) environment: Environment,
     #[serde(rename = "wsUrl")]
@@ -30,6 +38,7 @@ pub(super) struct Config {
     pub(super) public_key: String,
     #[serde(rename = "privateKey")]
     pub(super) private_key: String,
+    pub(super) telegram: Telegram,
 }
 
 pub(super) fn get_config() -> Config {
