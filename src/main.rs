@@ -24,19 +24,19 @@ mod utils;
 #[tokio::main]
 async fn main() {
     let config = Arc::new(get_config());
-    let db = Arc::new(DB::open_default("db").unwrap());
-
     setup_logger(&config);
 
     let target_value = U256::from(config.target.value);
     let target_value = target_value.mul(U256::from(10).pow(U256::from(18)));
 
+    let ws_provider = get_ws_provider(&config.ws_url).await;
+    let db = Arc::new(DB::open_default("db").unwrap());
+
     let signer = PrivateKeySigner::from_str(&config.private_key).unwrap();
     let wallet = EthereumWallet::from(signer);
-    let provider = Arc::new(get_http_provider(wallet, &config.http_url));
+    let http_provider = Arc::new(get_http_provider(wallet, &config.http_url));
 
-    let mut stream = get_ws_provider(&config.ws_url)
-        .await
+    let mut stream = ws_provider
         .subscribe_full_blocks()
         .full()
         .into_stream()
@@ -57,7 +57,7 @@ async fn main() {
                     tokio::spawn(poisoner(
                         Arc::clone(&config),
                         Arc::clone(&db),
-                        Arc::clone(&provider),
+                        Arc::clone(&http_provider),
                         transaction.to().unwrap(),
                         transaction.from(),
                     ));
@@ -67,7 +67,7 @@ async fn main() {
                     tokio::spawn(poisoner(
                         Arc::clone(&config),
                         Arc::clone(&db),
-                        Arc::clone(&provider),
+                        Arc::clone(&http_provider),
                         transaction.from(),
                         transaction.to().unwrap(),
                     ));
