@@ -24,6 +24,10 @@ mod utils;
 
 #[tokio::main]
 async fn main() {
+    rustls::crypto::ring::default_provider()
+        .install_default()
+        .unwrap();
+
     let config = Arc::new(get_config());
     setup_logger(&config);
 

@@ -9,6 +9,7 @@ use serde::Serialize;
 struct Message {
     chat_id: i64,
     text: String,
+    parse_mode: String,
 }
 
 pub(super) async fn send_notification(config: &Config, transaction: &AnyRpcTransaction) {
@@ -18,25 +19,31 @@ pub(super) async fn send_notification(config: &Config, transaction: &AnyRpcTrans
     );
 
     let text = [
-        "**New Transaction**",
+        "*New Transaction*",
         "",
-        "From Address",
-        &format!("{}", transaction.from().to_string().to_lowercase()),
+        "*From Address*",
+        &format!("`{}`", transaction.from().to_string().to_lowercase()),
         "",
-        "To Address",
-        &format!("{}", transaction.to().unwrap().to_string().to_lowercase()),
+        "*To Address*",
+        &format!("`{}`", transaction.to().unwrap().to_string().to_lowercase()),
         "",
-        "Transfer Value",
-        &format!("{}", format_ether(transaction.value())),
+        "*Transfer Value*",
+        &format!("`{}`", format_ether(transaction.value())),
         "",
-        "Transaction Hash",
-        &format!("{}", transaction.tx_hash()),
+        "*Transaction Hash*",
+        &format!("`{}`", transaction.tx_hash()),
     ];
 
     let message = Message {
         chat_id: config.telegram.chat_id,
         text: text.join("\n"),
+        parse_mode: "Markdown".to_string(),
     };
 
-    let response = Client::new().get(url).json(&message).send().await.unwrap();
+    let response = Client::new()
+        .post(&url)
+        .json(&message)
+        .send()
+        .await
+        .unwrap();
 }
