@@ -24,7 +24,7 @@ pub(super) fn setup_logger(config: &Config) {
                 humantime::format_rfc3339_seconds(SystemTime::now()),
                 colors.color(record.level()),
                 record.target(),
-                message
+                message,
             ))
         })
         .chain(std::io::stdout());
@@ -36,7 +36,7 @@ pub(super) fn setup_logger(config: &Config) {
                 humantime::format_rfc3339_seconds(SystemTime::now()),
                 record.level(),
                 record.target(),
-                message
+                message,
             ))
         })
         .chain(fern::log_file("output.log").unwrap());

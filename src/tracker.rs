@@ -1,5 +1,5 @@
 use crate::config::Config;
-use crate::telegram::send_incoming_transaction;
+use crate::telegram::send_notification;
 use crate::utils::get_identifier;
 use alloy::consensus::Transaction;
 use alloy::network::{
@@ -34,7 +34,7 @@ pub(super) async fn tracker(
             let value = transaction.value();
 
             info!("received ethereum | address {} value {}", address, value);
-            send_incoming_transaction(&config).await;
+            send_notification(&config, &transaction).await;
         }
     }
 }

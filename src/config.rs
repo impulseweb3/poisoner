@@ -19,9 +19,8 @@ pub(super) struct Target {
 #[derive(Debug, Deserialize)]
 pub(super) struct Telegram {
     pub(super) token: String,
-    pub(super) chat: i64,
-    pub(super) incoming: u8,
-    pub(super) outcoming: u8,
+    #[serde(rename = "chatId")]
+    pub(super) chat_id: i64,
 }
 
 #[derive(Debug, Deserialize)]
