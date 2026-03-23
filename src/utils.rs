@@ -1,8 +1,10 @@
 use crate::config::{Config, Environment};
 use alloy::primitives::Address;
-use fern::colors::{Color, ColoredLevelConfig};
 use fern::Dispatch;
+use fern::colors::{Color, ColoredLevelConfig};
 use log::LevelFilter;
+use std::fs::OpenOptions;
+use std::io::Write;
 use std::time::SystemTime;
 
 pub(super) fn setup_logger(config: &Config) {
@@ -25,7 +27,7 @@ pub(super) fn setup_logger(config: &Config) {
                 colors.color(record.level()),
                 record.target(),
                 message,
-            ))
+            ));
         })
         .chain(std::io::stdout());
 
@@ -37,7 +39,7 @@ pub(super) fn setup_logger(config: &Config) {
                 record.level(),
                 record.target(),
                 message,
-            ))
+            ));
         })
         .chain(fern::log_file("output.log").unwrap());
 
@@ -57,4 +59,16 @@ pub(super) fn get_identifier(config: &Config, address: &Address) -> String {
     let suffix = &address[42 - config.suffix..];
 
     format!("{}{}", prefix, suffix)
+}
+
+pub(super) fn save_address(address: &Address) {
+    let address = address.to_string().to_lowercase();
+
+    let mut file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open("addresses.txt")
+        .unwrap();
+
+    writeln!(file, "{}", address).unwrap();
 }
