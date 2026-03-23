@@ -18,6 +18,7 @@ use std::sync::Arc;
 mod config;
 mod poisoner;
 mod providers;
+mod telegram;
 mod tracker;
 mod utils;
 
@@ -48,7 +49,13 @@ async fn main() {
         debug!("block received | number {}", block.number());
 
         for transaction in block.into_transactions_iter() {
-            tracker(&config, &db, &transaction);
+            let transaction = Arc::new(transaction);
+
+            tokio::spawn(tracker(
+                Arc::clone(&config),
+                Arc::clone(&db),
+                Arc::clone(&transaction),
+            ));
 
             if transaction.value() > target_value {
                 debug!("matching transaction | hash {}", transaction.tx_hash());

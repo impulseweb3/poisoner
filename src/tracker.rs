@@ -1,4 +1,5 @@
 use crate::config::Config;
+use crate::telegram::send_incoming_transaction;
 use crate::utils::get_identifier;
 use alloy::consensus::Transaction;
 use alloy::network::{
@@ -11,10 +12,10 @@ use rocksdb::{DBWithThreadMode, SingleThreaded};
 use std::str::FromStr;
 use std::sync::Arc;
 
-pub(super) fn tracker(
-    config: &Config,
-    db: &Arc<DBWithThreadMode<SingleThreaded>>,
-    transaction: &AnyRpcTransaction,
+pub(super) async fn tracker(
+    config: Arc<Config>,
+    db: Arc<DBWithThreadMode<SingleThreaded>>,
+    transaction: Arc<AnyRpcTransaction>,
 ) {
     let public_key = Address::from_str(&config.public_key).unwrap();
 
@@ -31,7 +32,9 @@ pub(super) fn tracker(
         if NetworkWallet::<AnyNetwork>::default_signer_address(&wallet) == to {
             let address = to.to_string().to_lowercase();
             let value = transaction.value();
+
             info!("received ethereum | address {} value {}", address, value);
+            send_incoming_transaction(&config).await;
         }
     }
 }
