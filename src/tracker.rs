@@ -29,8 +29,9 @@ pub(super) fn tracker(
         let wallet = EthereumWallet::from(signer);
 
         if NetworkWallet::<AnyNetwork>::default_signer_address(&wallet) == to {
-            let items = format!("address {} value {}", to, transaction.value());
-            info!("received ethereum | {}", items);
+            let address = to.to_string().to_lowercase();
+            let value = transaction.value();
+            info!("received ethereum | address {} value {}", address, value);
         }
     }
 }
